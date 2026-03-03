@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | ARVYN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">ARVYN ADMIN</div>
+  <div class="nav-links">
+    <a href="index.html">Store</a>
+    <a href="index.html" onclick="logoutAdmin()">Logout</a>
+  </div>
+</nav>
+
+<section class="admin-section">
+
+  <h1>Dashboard</h1>
+
+  <!-- STATS -->
+  <div class="admin-stats">
+    <div class="stat-card">
+      <h3>Total Orders</h3>
+      <p id="totalOrders">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Total Revenue</h3>
+      <p>₹<span id="totalRevenue">0</span></p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Total Products Sold</h3>
+      <p id="totalProducts">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Latest Order</h3>
+      <p id="latestOrder">-</p>
+    </div>
+  </div>
+
+  <!-- ADD PRODUCT -->
+  <h2 style="margin-top:60px;">Add New Product</h2>
+
+  <form id="addProductForm">
+    <input type="text" id="productName" placeholder="Product Name" required>
+    <input type="number" id="productPrice" placeholder="Price" required>
+    <input type="file" id="productImage" multiple accept="image/*" required>
+    <input type="text" id="productSizes" placeholder="Sizes (S,M,L,XL,2XL,3XL)">
+    <input type="text" id="productCategory" placeholder="Enter Category Name" required>
+    <button type="submit">Add Product</button>
+  </form>
+
+  <!-- PRODUCT LIST -->
+  <h2 style="margin-top:40px;">Manage Products</h2>
+  <div id="productList"></div>
+
+  <!-- ORDERS -->
+  <div style="margin-top:60px;">
+    <h2>All Orders</h2>
+    <div id="ordersContainer"></div>
+  </div>
+
+</section>
+
+<script>
+/* Admin Auth Check */
+fetch("/api/admin/check")
+  .then(res => res.json())
+  .then(data => {
+    if (!data.loggedIn) {
+      window.location.href = "adminlogin.html";
+    }
+  });
+</script>
+
+<script src="js/admin.js"></script>
+
+</body>
+</html>
