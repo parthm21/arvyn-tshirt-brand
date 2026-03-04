@@ -70,20 +70,30 @@ if (form) {
     formData.append("category", document.getElementById("productCategory").value);
 
     // Sizes
-    const sizesInput = document.getElementById("productSizes").value;
-    const sizesArray = sizesInput.split(",").map(s => s.trim());
-    formData.append("sizes", JSON.stringify(sizesArray));
+const sizesInput = document.getElementById("productSizes").value;
 
+let sizesArray = [];
+
+if (sizesInput) {
+  sizesArray = sizesInput.split(",").map(s => s.trim());
+}
+
+formData.append("sizes", JSON.stringify(sizesArray));
     // Multiple Images
     const files = document.getElementById("productImage").files;
     for (let i = 0; i < files.length; i++) {
       formData.append("images", files[i]);
     }
 
-    await fetch("/api/products", {
-      method: "POST",
-      body: formData
-    });
+ const res = await fetch("/api/products", {
+  method: "POST",
+  body: formData
+});
+
+if (!res.ok) {
+  console.error("Product upload failed", res.status);
+  return;
+}
 
     e.target.reset();
     loadProducts();
