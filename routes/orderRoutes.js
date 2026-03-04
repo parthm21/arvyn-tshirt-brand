@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const Order = require("../models/Order");
+const Order = require("../models/order");
 
 function generateOrderId() {
   const random = Math.floor(1000 + Math.random() * 9000);
