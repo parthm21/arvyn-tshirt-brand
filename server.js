@@ -21,16 +21,11 @@ app.use(express.json());
 
 /* ================= STATIC FOLDERS ================= */
 
-/* IMPORTANT: uploads folder must be inside server folder */
+/* uploads folder */
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-/* Public folder for frontend */
+/* public folder (frontend) */
 app.use(express.static(path.join(__dirname, "public")));
-
-/* ================= DATABASE ================= */
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.log("❌ DB Error:", err));
 
 /* ================= ROUTES ================= */
 app.use("/api/products", require("./routes/productRoutes"));
@@ -42,9 +37,20 @@ app.get("/", (req, res) => {
   res.send("ARVYN Backend Running 🚀");
 });
 
-/* ================= SERVER START ================= */
-const PORT = process.env.PORT || 5000;
+/* ================= DATABASE + SERVER START ================= */
 
-app.listen(PORT, () => {
-  console.log(`🔥 Server Running on http://localhost:${PORT}`);
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+
+  console.log("✅ MongoDB Connected");
+
+  const PORT = process.env.PORT || 5000;
+
+  app.listen(PORT, () => {
+    console.log(`🔥 Server Running on port ${PORT}`);
+  });
+
+})
+.catch(err => {
+  console.error("❌ DB Error:", err);
 });
