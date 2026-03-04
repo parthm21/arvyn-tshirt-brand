@@ -2,8 +2,14 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Product = require("../models/product");
+const fs = require("fs");
 
-// Storage setup
+// ensure uploads folder exists
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
+// storage setup
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -15,31 +21,41 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-/* ================= GET ALL PRODUCTS ================= */
+/* ================= GET PRODUCTS ================= */
 
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
   } catch (err) {
-    console.error("Product fetch error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    res.status(500).json({ error: "Product fetch error" });
   }
 });
 
 /* ================= ADD PRODUCT ================= */
 
-router.post("/", upload.array("images", 2), async (req, res) => {
+router.post("/", upload.array("images", 5), async (req, res) => {
 
   try {
 
     const imagePaths = req.files?.map(file => "/uploads/" + file.filename) || [];
 
+    let sizes = [];
+
+    if (req.body.sizes) {
+      try {
+        sizes = JSON.parse(req.body.sizes);
+      } catch {
+        sizes = [];
+      }
+    }
+
     const product = new Product({
       name: req.body.name,
       price: req.body.price,
       category: req.body.category,
-      sizes: JSON.parse(req.body.sizes || "[]"),
+      sizes: sizes,
       images: imagePaths
     });
 
@@ -48,8 +64,14 @@ router.post("/", upload.array("images", 2), async (req, res) => {
     res.json(product);
 
   } catch (err) {
-    console.error("Product save error:", err);
-    res.status(500).json({ error: "Server error" });
+
+    console.error("Product Save Error:", err);
+
+    res.status(500).json({
+      error: "Product save failed",
+      message: err.message
+    });
+
   }
 
 });
@@ -66,8 +88,7 @@ router.delete("/:id", async (req, res) => {
 
   } catch (err) {
 
-    console.error("Delete error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Delete error" });
 
   }
 
@@ -89,8 +110,7 @@ router.put("/stock/:id", async (req, res) => {
 
   } catch (err) {
 
-    console.error("Stock update error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Stock update error" });
 
   }
 
