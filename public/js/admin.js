@@ -61,6 +61,7 @@ const form = document.getElementById("addProductForm");
 
 if (form) {
   form.addEventListener("submit", async (e) => {
+
     e.preventDefault();
 
     const formData = new FormData();
@@ -69,102 +70,150 @@ if (form) {
     formData.append("price", document.getElementById("productPrice").value);
     formData.append("category", document.getElementById("productCategory").value);
 
-    // Sizes
-const sizesInput = document.getElementById("productSizes").value;
+    // sizes
+    const sizesInput = document.getElementById("productSizes").value;
 
-let sizesArray = [];
+    let sizesArray = [];
 
-if (sizesInput) {
-  sizesArray = sizesInput.split(",").map(s => s.trim());
-}
+    if (sizesInput) {
+      sizesArray = sizesInput.split(",").map(s => s.trim());
+    }
 
-formData.append("sizes", JSON.stringify(sizesArray));
-    // Multiple Images
+    formData.append("sizes", JSON.stringify(sizesArray));
+
+    // images
     const files = document.getElementById("productImage").files;
+
     for (let i = 0; i < files.length; i++) {
       formData.append("images", files[i]);
     }
 
- const res = await fetch("/api/products", {
-  method: "POST",
-  body: formData
-});
+    try {
 
-if (!res.ok) {
-  console.error("Product upload failed", res.status);
-  return;
-}
+      const res = await fetch("/api/products", {
+        method: "POST",
+        body: formData
+      });
 
-    e.target.reset();
-    loadProducts();
+      if (!res.ok) {
+        console.error("Product upload failed", res.status);
+        alert("Product upload failed");
+        return;
+      }
+
+      form.reset();
+
+      loadProducts();
+
+    } catch (err) {
+
+      console.error("Upload error:", err);
+
+    }
+
   });
 }
-
 
 /* ================= STOCK TOGGLE ================= */
 
 async function toggleStock(id, status) {
 
-  await fetch("/api/products/stock/" + id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ stock: status })
-  });
+  try {
+
+    await fetch("/api/products/stock/" + id, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stock: status })
+    });
+
+  } catch (err) {
+
+    console.error("Stock update error:", err);
+
+  }
 
 }
-
 
 /* ================= DELETE PRODUCT ================= */
 
 async function deleteProduct(id) {
 
-  await fetch("/api/products/" + id, {
-    method: "DELETE"
-  });
+  try {
 
-  loadProducts();
+    await fetch("/api/products/" + id, {
+      method: "DELETE"
+    });
+
+    loadProducts();
+
+  } catch (err) {
+
+    console.error("Delete error:", err);
+
+  }
+
 }
+
 /* ================= LOAD ORDERS ================= */
 
 async function loadOrders() {
-  const res = await fetch("/api/orders");
-  const orders = await res.json();
 
-  const container = document.getElementById("ordersContainer");
-  if (!container) return;
+  try {
 
-  container.innerHTML = "";
+    const res = await fetch("/api/orders");
 
-  let totalRevenue = 0;
-  let totalProducts = 0;
+    if (!res.ok) {
+      console.error("Orders API Error:", res.status);
+      return;
+    }
 
-  orders.forEach(order => {
-    totalRevenue += order.total;
-    totalProducts += order.items.length;
+    const orders = await res.json();
 
-    container.innerHTML += `
-      <div class="order-card">
-        <h4>Order ID: ${order.orderId}</h4>
-        <p>Name: ${order.customerName}</p>
-        <p>Total: ₹${order.total}</p>
-        <p>Status: ${order.status}</p>
-      </div>
-    `;
-  });
+    const container = document.getElementById("ordersContainer");
 
-  document.getElementById("totalOrders").innerText = orders.length;
-  document.getElementById("totalRevenue").innerText = totalRevenue;
-  document.getElementById("totalProducts").innerText = totalProducts;
+    if (!container) return;
 
-  if (orders.length > 0) {
-    document.getElementById("latestOrder").innerText = orders[0].orderId;
+    container.innerHTML = "";
+
+    let totalRevenue = 0;
+    let totalProducts = 0;
+
+    orders.forEach(order => {
+
+      totalRevenue += order.total;
+      totalProducts += order.items.length;
+
+      container.innerHTML += `
+        <div class="order-card">
+          <h4>Order ID: ${order.orderId}</h4>
+          <p>Name: ${order.customerName}</p>
+          <p>Total: ₹${order.total}</p>
+          <p>Status: ${order.status}</p>
+        </div>
+      `;
+    });
+
+    document.getElementById("totalOrders").innerText = orders.length;
+    document.getElementById("totalRevenue").innerText = totalRevenue;
+    document.getElementById("totalProducts").innerText = totalProducts;
+
+    if (orders.length > 0) {
+      document.getElementById("latestOrder").innerText = orders[0].orderId;
+    }
+
+  } catch (err) {
+
+    console.error("Orders Load Error:", err);
+
   }
-}
 
+}
 
 /* ================= INIT ================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+
   loadProducts();
   loadOrders();
+
 });
