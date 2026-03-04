@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
 // POST new product (multiple images)
 router.post("/", upload.array("images", 2), async (req, res) => {
 
-  const imagePaths = req.files.map(file => "/uploads/" + file.filename);
+  const imagePaths = req.files?.map(file => "/uploads/" + file.filename) || [];
 
   const product = new Product({
     name: req.body.name,
