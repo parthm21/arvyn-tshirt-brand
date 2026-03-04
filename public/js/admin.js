@@ -1,47 +1,59 @@
 /* ================= LOAD PRODUCTS ================= */
 
 async function loadProducts() {
-  const res = await fetch("/api/products");
-  const products = await res.json();
+  try {
 
-  const container = document.getElementById("productList");
-  if (!container) return;
+    const res = await fetch("/api/products");
 
-  container.innerHTML = "";
+    if (!res.ok) {
+      console.error("Products API Error:", res.status);
+      return;
+    }
 
-  products.forEach(p => {
+    const products = await res.json();
 
-    const image = p.images?.[0] || p.image;
+    const container = document.getElementById("productList");
+    if (!container) return;
 
-    container.innerHTML += `
-      <div class="admin-product-card">
+    container.innerHTML = "";
 
-        <img src="${image}" width="80">
+    products.forEach(p => {
 
-        <div style="flex:1;">
-          <h3>${p.name}</h3>
-          <p>₹${p.price}</p>
-          <p>Category: ${p.category}</p>
-          <p>Sizes: ${p.sizes?.join(", ") || "-"}</p>
+      const image = (p.images && p.images.length > 0) ? p.images[0] : "";
+
+      const sizes = (p.sizes && p.sizes.length > 0) ? p.sizes.join(", ") : "-";
+
+      container.innerHTML += `
+        <div class="admin-product-card">
+
+          <img src="${image}" width="80" alt="product">
+
+          <div style="flex:1;">
+            <h3>${p.name || ""}</h3>
+            <p>₹${p.price || 0}</p>
+            <p>Category: ${p.category || "-"}</p>
+            <p>Sizes: ${sizes}</p>
+          </div>
+
+          <label class="switch">
+            <input type="checkbox"
+              ${p.stock !== false ? "checked" : ""}
+              onchange="toggleStock('${p._id}', this.checked)">
+            <span class="slider"></span>
+          </label>
+
+          <button onclick="deleteProduct('${p._id}')">
+            Delete
+          </button>
+
         </div>
+      `;
+    });
 
-        <!-- STOCK TOGGLE -->
-        <label class="switch">
-          <input type="checkbox" 
-                 ${p.stock !== false ? "checked" : ""} 
-                 onchange="toggleStock('${p._id}', this.checked)">
-          <span class="slider"></span>
-        </label>
-
-        <button onclick="deleteProduct('${p._id}')">
-          Delete
-        </button>
-
-      </div>
-    `;
-  });
+  } catch (err) {
+    console.error("Product Load Error:", err);
+  }
 }
-
 
 /* ================= ADD PRODUCT ================= */
 
