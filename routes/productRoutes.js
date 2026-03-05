@@ -2,20 +2,17 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Product = require("../models/product");
-const fs = require("fs");
 
-// ensure uploads folder exists
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
+const cloudinary = require("../config/cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-// storage setup
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+/* ================= CLOUDINARY STORAGE ================= */
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "arvyn-products",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"]
   }
 });
 
@@ -25,11 +22,17 @@ const upload = multer({ storage });
 
 router.get("/", async (req, res) => {
   try {
+
     const products = await Product.find().sort({ createdAt: -1 });
+
     res.json(products);
+
   } catch (err) {
+
     console.error(err);
+
     res.status(500).json({ error: "Product fetch error" });
+
   }
 });
 
@@ -39,7 +42,7 @@ router.post("/", upload.array("images", 5), async (req, res) => {
 
   try {
 
-    const imagePaths = req.files?.map(file => "/uploads/" + file.filename) || [];
+    const imagePaths = req.files?.map(file => file.path) || [];
 
     let sizes = [];
 
