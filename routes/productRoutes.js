@@ -6,21 +6,18 @@ const Product = require("../models/product");
 const cloudinary = require("../config/cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-/* ================= CLOUDINARY STORAGE ================= */
+/* CLOUDINARY STORAGE */
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: "arvyn-products",
-      format: file.mimetype.split("/")[1]
-    };
+  params: {
+    folder: "arvyn-products"
   }
 });
 
 const upload = multer({ storage });
 
-/* ================= GET PRODUCTS ================= */
+/* GET PRODUCTS */
 
 router.get("/", async (req, res) => {
 
@@ -32,32 +29,34 @@ router.get("/", async (req, res) => {
 
   } catch (err) {
 
-    console.error("Fetch error:", err);
+    console.log(err);
 
-    res.status(500).json({ error: "Product fetch error" });
+    res.status(500).json({ error: "Fetch error" });
 
   }
 
 });
 
-/* ================= ADD PRODUCT ================= */
+/* ADD PRODUCT */
 
 router.post("/", upload.array("images", 5), async (req, res) => {
 
   try {
 
-    const imagePaths = req.files?.map(file => file.path) || [];
+    if (!req.files) {
+      return res.status(400).json({ error: "No images uploaded" });
+    }
+
+    const images = req.files.map(file => file.path);
 
     let sizes = [];
 
     if (req.body.sizes) {
-
       try {
         sizes = JSON.parse(req.body.sizes);
       } catch {
         sizes = [];
       }
-
     }
 
     const product = new Product({
@@ -65,7 +64,7 @@ router.post("/", upload.array("images", 5), async (req, res) => {
       price: req.body.price,
       category: req.body.category,
       sizes: sizes,
-      images: imagePaths
+      images: images
     });
 
     await product.save();
@@ -74,17 +73,15 @@ router.post("/", upload.array("images", 5), async (req, res) => {
 
   } catch (err) {
 
-    console.error("UPLOAD ERROR:", err);
+    console.log("UPLOAD ERROR:", err);
 
-    res.status(500).json({
-      error: err.message
-    });
+    res.status(500).json({ error: err.message });
 
   }
 
 });
 
-/* ================= DELETE PRODUCT ================= */
+/* DELETE PRODUCT */
 
 router.delete("/:id", async (req, res) => {
 
@@ -102,7 +99,7 @@ router.delete("/:id", async (req, res) => {
 
 });
 
-/* ================= TOGGLE STOCK ================= */
+/* STOCK TOGGLE */
 
 router.put("/stock/:id", async (req, res) => {
 
