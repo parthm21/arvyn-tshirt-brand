@@ -40,6 +40,10 @@ router.get("/", async (req, res) => {
 /* ADD PRODUCT */
 
 router.post("/", upload.array("images", 5), async (req, res) => {
+  
+   console.log("FILES:", req.files);
+  console.log("BODY:", req.body);
+  
 
   try {
 
