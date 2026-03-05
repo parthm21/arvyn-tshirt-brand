@@ -507,3 +507,18 @@ input:checked + .slider:before {
   margin-top: 10px;
   font-size: 14px;
 }
+.admin-product-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-product-card button {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: crimson;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+}
