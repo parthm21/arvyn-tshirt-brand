@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 
   } catch (err) {
 
-    console.log(err);
+    console.log("FETCH ERROR:", err);
 
     res.status(500).json({ error: "Fetch error" });
 
@@ -42,10 +42,6 @@ router.get("/", async (req, res) => {
 router.post("/", upload.array("images", 5), async (req, res) => {
 
   try {
-
-    if (!req.files) {
-      return res.status(400).json({ error: "No images uploaded" });
-    }
 
     const images = req.files.map(file => file.path);
 
@@ -99,7 +95,7 @@ router.delete("/:id", async (req, res) => {
 
 });
 
-/* STOCK TOGGLE */
+/* STOCK */
 
 router.put("/stock/:id", async (req, res) => {
 
