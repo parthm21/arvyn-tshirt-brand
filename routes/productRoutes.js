@@ -10,9 +10,11 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: "arvyn-products",
-    allowed_formats: ["jpg", "png", "jpeg", "webp"]
+  params: async (req, file) => {
+    return {
+      folder: "arvyn-products",
+      format: file.mimetype.split("/")[1]
+    };
   }
 });
 
@@ -21,6 +23,7 @@ const upload = multer({ storage });
 /* ================= GET PRODUCTS ================= */
 
 router.get("/", async (req, res) => {
+
   try {
 
     const products = await Product.find().sort({ createdAt: -1 });
@@ -29,11 +32,12 @@ router.get("/", async (req, res) => {
 
   } catch (err) {
 
-    console.error(err);
+    console.error("Fetch error:", err);
 
     res.status(500).json({ error: "Product fetch error" });
 
   }
+
 });
 
 /* ================= ADD PRODUCT ================= */
@@ -47,11 +51,13 @@ router.post("/", upload.array("images", 5), async (req, res) => {
     let sizes = [];
 
     if (req.body.sizes) {
+
       try {
         sizes = JSON.parse(req.body.sizes);
       } catch {
         sizes = [];
       }
+
     }
 
     const product = new Product({
@@ -68,11 +74,10 @@ router.post("/", upload.array("images", 5), async (req, res) => {
 
   } catch (err) {
 
-    console.error("Product Save Error:", err);
+    console.error("UPLOAD ERROR:", err);
 
     res.status(500).json({
-      error: "Product save failed",
-      message: err.message
+      error: err.message
     });
 
   }
